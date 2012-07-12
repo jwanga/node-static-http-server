@@ -15,6 +15,12 @@ with "1234" being a custom port number"
 
 Your web application will be served at http://localhost:8888 by default or http://localhost:1234 with "1234" being the custom port you passed.
 
+Mime Types:
+You can add to the mimeTypes has to serve more file types.
+
+Virtual Directories:
+Add to the virtualDirectories hash if you have resources that are not children of the root directory
+
 */
 var http = require("http"),
     url = require("url"),
@@ -32,16 +38,29 @@ var mimeTypes = {
     "js": "text/javascript",
     "css": "text/css"};
 
+var virtualDirectories = {
+    //"images": "../images/"
+  };
+
 http.createServer(function(request, response) {
 
   var uri = url.parse(request.url).pathname
-    , filename = path.join(process.cwd(), uri);
+    , filename = path.join(process.cwd(), uri)
+    , root = uri.split("/")[1]
+    , virtualDirectory;
   
+  virtualDirectory = virtualDirectories[root];
+  if(virtualDirectory){
+    uri = uri.slice(root.length + 1, uri.length);
+    filename = path.join(virtualDirectory ,uri);
+  }
+
   path.exists(filename, function(exists) {
     if(!exists) {
       response.writeHead(404, {"Content-Type": "text/plain"});
       response.write("404 Not Found\n");
       response.end();
+      console.error('404: ' + filename);
       return;
     }
 
@@ -52,14 +71,15 @@ http.createServer(function(request, response) {
         response.writeHead(500, {"Content-Type": "text/plain"});
         response.write(err + "\n");
         response.end();
+        console.error('500: ' + filename);
         return;
       }
 
       var mimeType = mimeTypes[path.extname(filename).split(".")[1]];
       response.writeHead(200, {"Content-Type": mimeType});
       response.write(file, "binary");
-      console.log('rendered ' + filename + ' as ' + mimeType);
       response.end();
+      console.log('200: ' + filename + ' as ' + mimeType);
     });
   });
 }).listen(parseInt(port, 10));
