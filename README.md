@@ -16,3 +16,9 @@ $ node server.js 1234
 with "1234" being a custom port number"
 
 Your web application will be served at http://localhost:8888 by default or http://localhost:1234 with "1234" being the custom port you passed.
+
+Mime Types:
+You can add to the mimeTypes has to serve more file types.
+
+Virtual Directories:
+Add to the virtualDirectories hash if you have resources that are not children of the root directory
